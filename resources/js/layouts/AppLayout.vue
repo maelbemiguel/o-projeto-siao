@@ -12,11 +12,11 @@ const { notifications } = useNotify()
 const sidebarOpen = ref(true)
 
 const navItems = [
-    { to: '/dashboard',  label: 'Dashboard',  icon: '▦' },
-    { to: '/cartorios',  label: 'Cartórios',   icon: '🏛' },
-    { to: '/imoveis',    label: 'Imóveis',     icon: '🏠' },
-    { to: '/usuarios',   label: 'Usuários',    icon: '👤' },
-    { to: '/relatorios', label: 'Relatórios',  icon: '📊' },
+    { to: '/dashboard',  label: 'Dashboard',  icon: 'dashboard' },
+    { to: '/cartorios',  label: 'Cartórios',   icon: 'account_balance' },
+    { to: '/imoveis',    label: 'Imóveis',     icon: 'apartment' },
+    { to: '/usuarios',   label: 'Usuários',    icon: 'user_attributes' },
+    { to: '/relatorios', label: 'Relatórios',  icon: 'analytics' },
 ]
 
 async function handleLogout() {
@@ -47,7 +47,7 @@ async function handleLogout() {
                     class="nav-item"
                     active-class="nav-item--active"
                 >
-                    <span class="nav-icon">{{ item.icon }}</span>
+                    <span class="nav-icon material-symbols-outlined">{{ item.icon }}</span>
                     <span v-if="sidebarOpen" class="nav-label">{{ item.label }}</span>
                 </router-link>
             </nav>

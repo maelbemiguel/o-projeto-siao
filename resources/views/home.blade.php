@@ -6,6 +6,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <title>Sião Cartórios</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+   <link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+  />
   </head>
   <body>
     <div id="app"></div>

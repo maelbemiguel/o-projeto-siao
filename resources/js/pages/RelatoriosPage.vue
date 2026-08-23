@@ -105,28 +105,28 @@ onMounted(() => { loadResumo(); loadCartorios() })
         <template v-else-if="activeTab === 'resumo' && resumo">
             <div class="stats-grid">
                 <div class="stat-card">
-                    <span class="stat-icon">🏛</span>
+                    <span class="stat-icon material-symbols-outlined">account_balance</span>
                     <div>
                         <span class="stat-label">Cartórios</span>
                         <span class="stat-value">{{ resumo.total_cartorios }}</span>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <span class="stat-icon">👤</span>
+                    <span class="stat-icon material-symbols-outlined">user_attributes</span>
                     <div>
                         <span class="stat-label">Usuários</span>
                         <span class="stat-value">{{ resumo.total_usuarios }}</span>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <span class="stat-icon">🏠</span>
+                    <span class="stat-icon material-symbols-outlined">apartment</span>
                     <div>
                         <span class="stat-label">Imóveis</span>
                         <span class="stat-value">{{ resumo.total_imoveis }}</span>
                     </div>
                 </div>
                 <div class="stat-card stat-card--accent">
-                    <span class="stat-icon">💰</span>
+                    <span class="stat-icon material-symbols-outlined">attach_money</span>
                     <div>
                         <span class="stat-label">Valor total avaliado</span>
                         <span class="stat-value stat-value--sm">{{ formatCurrency(resumo.valor_total_avaliado) }}</span>
@@ -236,7 +236,7 @@ onMounted(() => { loadResumo(); loadCartorios() })
 .tab-btn--active { background: var(--ink); color: #fff; border-color: var(--ink); }
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
 .stat-card { display: flex; align-items: center; gap: 16px; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
-.stat-card--accent { border-color: rgba(0,239,31,.3); background: #f0fff2; }
+.stat-card--accent { border-color: rgba(0,239,31,.3); background: #f0fff2; min-width: 300px}
 .stat-icon { font-size: 26px; }
 .stat-label { display: block; font-size: 12px; color: var(--muted); font-weight: 600; }
 .stat-value { display: block; font-size: 28px; font-weight: 800; letter-spacing: -.04em; color: var(--ink); }
