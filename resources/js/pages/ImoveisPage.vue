@@ -22,6 +22,7 @@ const showModal = ref(false)
 const isEditing = ref(false)
 const saving    = ref(false)
 const errors    = ref({})
+const proprietarioCpfFormatado   = ref('')
 
 const STATUS_OPTIONS = ['ativo', 'inativo', 'pendente', 'cancelado']
 
@@ -88,6 +89,8 @@ function openCreate() {
         valor_avaliado: '', status: 'ativo', proprietario_nome: '',
         proprietario_cpf: '', cartorio_id: '',
     })
+
+    proprietarioCpfFormatado.value = ''
     showModal.value = true
 }
 
@@ -111,6 +114,9 @@ function openEdit(row) {
         proprietario_cpf:  row.proprietario_cpf  ?? '',
         cartorio_id:       row.cartorio_id       ?? '',
     })
+
+    digitarCpf(form.proprietario_cpf)
+
     showModal.value = true
 }
 
@@ -158,6 +164,21 @@ function onSearch() { page.value = 1; loadImoveis() }
 function onPage(p)  { page.value = p; loadImoveis() }
 
 onMounted(() => { loadImoveis(); loadCartorios() })
+
+function digitarCpf(valorDigitado) {
+    const numeros = valorDigitado
+        .replace(/\D/g,"")
+        .slice(0,11)
+
+    form.proprietario_cpf = numeros
+
+    proprietarioCpfFormatado.value = numeros
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+
+}
+
 </script>
 
 <template>
@@ -225,7 +246,14 @@ onMounted(() => { loadImoveis(); loadCartorios() })
                 </div>
 
                 <FormField label="Proprietário — Nome" v-model="form.proprietario_nome" :error="errors.proprietario_nome?.[0]" />
-                <FormField label="Proprietário — CPF"  v-model="form.proprietario_cpf"  :error="errors.proprietario_cpf?.[0]" placeholder="000.000.000-00" />
+                <FormField 
+                    label="Proprietário — CPF"  
+                    :model-value = "proprietarioCpfFormatado"
+                    @update:model-value="digitarCpf"
+                    :error="errors.proprietario_cpf?.[0]" 
+                    placeholder="000.000.000-00" 
+                    maxlength="14"
+                    />
 
                 <div class="form-actions">
                     <button type="button" class="btn-secondary" @click="showModal = false">Cancelar</button>
