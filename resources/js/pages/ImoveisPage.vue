@@ -24,6 +24,7 @@ const saving    = ref(false)
 const errors    = ref({})
 const proprietarioCpfFormatado   = ref('')
 const cepFormatado = ref('')
+const valorAvaliadoFormatado = ref('')
 
 const STATUS_OPTIONS = ['ativo', 'inativo', 'pendente', 'cancelado']
 
@@ -93,6 +94,7 @@ function openCreate() {
 
     proprietarioCpfFormatado.value = ''
     cepFormatado.value = ''
+    valorAvaliadoFormatado.value=''
     showModal.value = true
 }
 
@@ -119,6 +121,7 @@ function openEdit(row) {
 
     digitarCpf(form.proprietario_cpf)
     digitarCep(form.cep)
+    digitarValor(form.valor_avaliado)
 
     showModal.value = true
 }
@@ -182,16 +185,31 @@ function digitarCpf(valorDigitado) {
 
 }
 
-function digitarCep(valorCepDigitado) {
-    const numeroCep = String(valorCepDigitado ?? '')
+function digitarCep(valorDigitado) {
+    const numeros = String(valorDigitado ?? '')
         .replace(/\D/g,"")
         .slice(0,8)
 
-        form.cep = numeroCep
+        form.cep = numeros
 
-        cepFormatado.value = numeroCep.replace(/(\d{5})(\d)/, '$1-$2')
+        cepFormatado.value = numeros.replace(/(\d{5})(\d)/, '$1-$2')
 }
 
+function digitarValor(valorDigitado) {
+    const numeros = String(valorDigitado ?? '')
+        .replace(/\D/g,"")
+        .slice(0,15)
+
+    const valor = Number(numeros) / 100
+
+    form.valor_avaliado = valor.toFixed(2)
+
+    valorAvaliadoFormatado.value = valor.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    })
+
+}
 </script>
 
 <template>
@@ -246,7 +264,12 @@ function digitarCep(valorCepDigitado) {
                     maxlength="9" 
                     />
                 <FormField label="Área Total (m²)"  v-model="form.area_total"     :error="errors.area_total?.[0]"     type="number" />
-                <FormField label="Valor Avaliado (R$)" v-model="form.valor_avaliado" :error="errors.valor_avaliado?.[0]" type="number" />
+                <FormField 
+                    label="Valor Avaliado (R$)" 
+                    :model-value = "valorAvaliadoFormatado"
+                    @update:model-value = "digitarValor"
+                    :error="errors.valor_avaliado?.[0]" 
+                    type="text" />
 
                 <!-- Status -->
                 <div class="form-field">
