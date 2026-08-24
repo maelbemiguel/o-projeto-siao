@@ -25,6 +25,7 @@ const errors    = ref({})
 const proprietarioCpfFormatado   = ref('')
 const cepFormatado = ref('')
 const valorAvaliadoFormatado = ref('')
+const areaTotalFormatado = ref('')
 
 const STATUS_OPTIONS = ['ativo', 'inativo', 'pendente', 'cancelado']
 
@@ -95,6 +96,8 @@ function openCreate() {
     proprietarioCpfFormatado.value = ''
     cepFormatado.value = ''
     valorAvaliadoFormatado.value=''
+    areaTotalFormatado.value =''
+
     showModal.value = true
 }
 
@@ -122,6 +125,7 @@ function openEdit(row) {
     digitarCpf(form.proprietario_cpf)
     digitarCep(form.cep)
     digitarValor(form.valor_avaliado)
+    digitarArea(form.area_total)
 
     showModal.value = true
 }
@@ -210,6 +214,24 @@ function digitarValor(valorDigitado) {
     })
 
 }
+
+function digitarArea(valorDigitado) {
+    const numeros = String(valorDigitado ?? '')
+        .replace(/\D/g,"")
+        .slice(0,12)
+    
+    const valor = Number(numeros) / 100
+    
+    form.area_total = valor.toFixed(2)
+
+    areaTotalFormatado.value = valor.toLocaleString('pt-BR', {
+        minimumFractionDigits:2,
+        maximumFractionDigits:2
+    })
+
+
+}
+
 </script>
 
 <template>
@@ -263,13 +285,20 @@ function digitarValor(valorDigitado) {
                     placeholder="00000-000"
                     maxlength="9" 
                     />
-                <FormField label="Área Total (m²)"  v-model="form.area_total"     :error="errors.area_total?.[0]"     type="number" />
+                <FormField 
+                    label="Área Total (m²)"  
+                    :model-value = "areaTotalFormatado"
+                    @update:model-value = "digitarArea"
+                    :error="errors.area_total?.[0]"     
+                    type="text" 
+                    />
                 <FormField 
                     label="Valor Avaliado (R$)" 
                     :model-value = "valorAvaliadoFormatado"
                     @update:model-value = "digitarValor"
                     :error="errors.valor_avaliado?.[0]" 
-                    type="text" />
+                    type="text" 
+                    />
 
                 <!-- Status -->
                 <div class="form-field">
