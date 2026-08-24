@@ -1,4 +1,8 @@
 <script setup>
+defineOptions({
+    inheritAttrs: false
+})
+
 defineProps({
     label:       { type: String,  required: true },
     modelValue:  { type: [String, Number], default: '' },
@@ -14,6 +18,7 @@ defineEmits(['update:modelValue'])
     <div class="form-field">
         <label>{{ label }}<span v-if="required" class="req">*</span></label>
         <input
+            v-bind="$attrs"
             :type="type"
             :value="modelValue"
             :placeholder="placeholder"

@@ -23,6 +23,7 @@ const isEditing = ref(false)
 const saving    = ref(false)
 const errors    = ref({})
 const proprietarioCpfFormatado   = ref('')
+const cepFormatado = ref('')
 
 const STATUS_OPTIONS = ['ativo', 'inativo', 'pendente', 'cancelado']
 
@@ -91,6 +92,7 @@ function openCreate() {
     })
 
     proprietarioCpfFormatado.value = ''
+    cepFormatado.value = ''
     showModal.value = true
 }
 
@@ -116,6 +118,7 @@ function openEdit(row) {
     })
 
     digitarCpf(form.proprietario_cpf)
+    digitarCep(form.cep)
 
     showModal.value = true
 }
@@ -179,6 +182,16 @@ function digitarCpf(valorDigitado) {
 
 }
 
+function digitarCep(valorCepDigitado) {
+    const numeroCep = String(valorCepDigitado ?? '')
+        .replace(/\D/g,"")
+        .slice(0,8)
+
+        form.cep = numeroCep
+
+        cepFormatado.value = numeroCep.replace(/(\d{5})(\d)/, '$1-$2')
+}
+
 </script>
 
 <template>
@@ -224,7 +237,14 @@ function digitarCpf(valorDigitado) {
                 <FormField label="Bairro"    v-model="form.bairro"      :error="errors.bairro?.[0]" />
                 <FormField label="Cidade"    v-model="form.cidade"      :error="errors.cidade?.[0]" />
                 <FormField label="Estado (UF)" v-model="form.estado"   :error="errors.estado?.[0]" placeholder="SP" />
-                <FormField label="CEP"        v-model="form.cep"        :error="errors.cep?.[0]" placeholder="00000-000" />
+                <FormField 
+                    label="CEP"        
+                    :model-value = "cepFormatado"   
+                    @update:model-value="digitarCep"     
+                    :error="errors.cep?.[0]" 
+                    placeholder="00000-000"
+                    maxlength="9" 
+                    />
                 <FormField label="Área Total (m²)"  v-model="form.area_total"     :error="errors.area_total?.[0]"     type="number" />
                 <FormField label="Valor Avaliado (R$)" v-model="form.valor_avaliado" :error="errors.valor_avaliado?.[0]" type="number" />
 
