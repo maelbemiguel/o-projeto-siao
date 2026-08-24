@@ -23,7 +23,7 @@ defineEmits(['edit', 'delete'])
                 <tr v-else-if="!rows.length">
                     <td :colspan="columns.length + 1" class="empty-cell">Nenhum registro encontrado.</td>
                 </tr>
-                <tr v-else v-for="row in rows" :key="row.id ?? row.idcartorio ?? row.idimovel ?? row.idusuario">
+                <tr v-else v-for="row in rows" :key="row.id ?? row.idcartorio ?? row.idimovel ?? row.idusuario ?? row.idproprietario">
                     <td v-for="col in columns" :key="col.key">
                         <slot :name="`cell-${col.key}`" :row="row">
                             {{ row[col.key] ?? '—' }}

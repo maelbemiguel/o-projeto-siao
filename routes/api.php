@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartorioController;
 use App\Http\Controllers\Api\ImovelController;
+use App\Http\Controllers\Api\ProprietarioController;
 use App\Http\Controllers\Api\RelatorioController;
 use App\Http\Controllers\Api\UsuarioController;
 use Illuminate\Support\Facades\Route;
@@ -31,6 +32,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Usuários
     Route::apiResource('usuarios', UsuarioController::class)
         ->parameters(['usuarios' => 'usuario']);
+
+    // Proprietários
+    Route::apiResource('proprietarios', ProprietarioController::class)
+        ->parameters(['proprietarios' => 'proprietario']);
 
     // Relatórios
     Route::prefix('relatorios')->group(function () {

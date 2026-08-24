@@ -14,8 +14,9 @@ const routes = [
         children: [
             { path: '',         component: () => import('./pages/DashboardPage.vue') },
             { path: '/cartorios', component: () => import('./pages/CartoriosPage.vue') },
-            { path: '/imoveis',   component: () => import('./pages/ImoveisPage.vue') },
-            { path: '/usuarios',  component: () => import('./pages/UsuariosPage.vue') },
+            { path: '/imoveis',        component: () => import('./pages/ImoveisPage.vue') },
+            { path: '/proprietarios', component: () => import('./pages/ProprietariosPage.vue') },
+            { path: '/usuarios',       component: () => import('./pages/UsuariosPage.vue') },
             { path: '/relatorios',component: () => import('./pages/RelatoriosPage.vue') },
         ],
     },

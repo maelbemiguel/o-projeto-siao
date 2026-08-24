@@ -14,8 +14,9 @@ const sidebarOpen = ref(true)
 const navItems = [
     { to: '/dashboard',  label: 'Dashboard',  icon: 'dashboard' },
     { to: '/cartorios',  label: 'Cartórios',   icon: 'account_balance' },
-    { to: '/imoveis',    label: 'Imóveis',     icon: 'apartment' },
-    { to: '/usuarios',   label: 'Usuários',    icon: 'user_attributes' },
+    { to: '/imoveis',        label: 'Imóveis',        icon: 'apartment' },
+    { to: '/proprietarios', label: 'Proprietários',  icon: 'person' },
+    { to: '/usuarios',       label: 'Usuários',       icon: 'user_attributes' },
     { to: '/relatorios', label: 'Relatórios',  icon: 'analytics' },
 ]
 
