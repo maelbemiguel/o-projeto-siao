@@ -34,6 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ->parameters(['usuarios' => 'usuario']);
 
     // Proprietários
+    Route::get('proprietarios/busca', [ProprietarioController::class, 'busca']);
     Route::apiResource('proprietarios', ProprietarioController::class)
         ->parameters(['proprietarios' => 'proprietario']);
 

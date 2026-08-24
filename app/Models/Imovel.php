@@ -50,6 +50,6 @@ class Imovel extends Model
 
     public function proprietario(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'proprietario_id', 'idusuario');
+        return $this->belongsTo(Proprietario::class, 'proprietario_id', 'idproprietario');
     }
 }

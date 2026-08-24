@@ -13,6 +13,42 @@ use OpenApi\Attributes as OA;
 class ProprietarioController extends Controller
 {
     #[OA\Get(
+        path: '/api/proprietarios/busca',
+        tags: ['Proprietários'],
+        summary: 'Busca rápida de proprietários para autocomplete',
+        security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(name: 'q', in: 'query', required: true, schema: new OA\Schema(type: 'string'), description: 'Termo de busca: nome, CPF, e-mail ou telefone'),
+            new OA\Parameter(name: 'limit', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 10)),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Lista de proprietários encontrados'),
+            new OA\Response(response: 401, description: 'Não autenticado'),
+        ]
+    )]
+    public function busca(Request $request): JsonResponse
+    {
+        $termo = trim($request->query('q', ''));
+        $limit = min((int) $request->query('limit', 10), 50);
+
+        if ($termo === '') {
+            return response()->json([]);
+        }
+
+        $proprietarios = Proprietario::where(function ($q) use ($termo) {
+            $q->where('nome', 'like', "%{$termo}%")
+                ->orWhere('cpf', 'like', "%{$termo}%")
+                ->orWhere('email', 'like', "%{$termo}%")
+                ->orWhere('telefone', 'like', "%{$termo}%");
+        })
+            ->orderBy('nome')
+            ->limit($limit)
+            ->get(['idproprietario', 'nome', 'cpf', 'email', 'telefone']);
+
+        return response()->json($proprietarios);
+    }
+
+    #[OA\Get(
         path: '/api/proprietarios',
         tags: ['Proprietários'],
         summary: 'Listar todos os proprietários',

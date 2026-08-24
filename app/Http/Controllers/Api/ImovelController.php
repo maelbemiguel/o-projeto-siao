@@ -30,7 +30,7 @@ class ImovelController extends Controller
     )]
     public function index(Request $request): JsonResponse
     {
-        $query = Imovel::with('cartorio');
+        $query = Imovel::with('cartorio', 'proprietario');
 
         if ($search = $request->query('search')) {
             $query->where(function ($q) use ($search) {
@@ -47,6 +47,10 @@ class ImovelController extends Controller
 
         if ($cartorioId = $request->query('cartorio_id')) {
             $query->where('cartorio_id', $cartorioId);
+        }
+
+        if ($proprietarioId = $request->query('proprietario_id')) {
+            $query->where('proprietario_id', $proprietarioId);
         }
 
         $imoveis = $query->orderBy('matricula')->paginate($request->query('per_page', 15));

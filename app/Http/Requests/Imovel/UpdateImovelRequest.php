@@ -27,7 +27,7 @@ class UpdateImovelRequest extends FormRequest
             'area_total' => ['nullable', 'numeric', 'min:0'],
             'valor_avaliado' => ['nullable', 'numeric', 'min:0'],
             'status' => ['nullable', 'string', 'max:50'],
-            'proprietario_id' => ['nullable', 'integer', 'exists:usuario,idusuario'],
+            'proprietario_id' => ['nullable', 'integer', 'exists:proprietario,idproprietario'],
             'proprietario_nome' => ['nullable', 'string', 'max:150'],
             'proprietario_cpf' => ['nullable', 'string', 'max:14'],
             'cartorio_id' => ['nullable', 'integer', 'exists:cartorio,idcartorio'],
@@ -39,7 +39,7 @@ class UpdateImovelRequest extends FormRequest
         return [
             'matricula.unique' => 'Já existe um imóvel com essa matrícula.',
             'estado.size' => 'O estado deve ter exatamente 2 caracteres.',
-            'proprietario_id.exists' => 'Usuário proprietário não encontrado.',
+            'proprietario_id.exists' => 'Proprietário não encontrado.',
             'cartorio_id.exists' => 'Cartório não encontrado.',
         ];
     }
