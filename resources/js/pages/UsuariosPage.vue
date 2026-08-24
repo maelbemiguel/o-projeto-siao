@@ -22,6 +22,11 @@ const isEditing = ref(false)
 const saving    = ref(false)
 const errors    = ref({})
 
+const cepFormatado = ref('')
+const cpfFormatado = ref('')
+const telefoneFormatado = ref('')
+
+
 const form = reactive({
     idusuario:             null,
     nome:                  '',
@@ -80,6 +85,11 @@ function openCreate() {
         password_confirmation: '', telefone: '', endereco: '',
         cidade: '', estado: '', cep: '', cartorio_id: '',
     })
+
+    cepFormatado.value = ''
+    cpfFormatado.value=''
+    telefoneFormatado.value =''
+
     showModal.value = true
 }
 
@@ -100,6 +110,11 @@ function openEdit(row) {
         cep:                   row.cep         ?? '',
         cartorio_id:           row.cartorio_id ?? '',
     })
+
+    digitarCep(form.cep)
+    digitarCpf(form.cpf)
+    digitarTelefone(form.telefone)
+
     showModal.value = true
 }
 
@@ -143,6 +158,67 @@ function onSearch() { page.value = 1; loadUsuarios() }
 function onPage(p)  { page.value = p; loadUsuarios() }
 
 onMounted(() => { loadUsuarios(); loadCartorios() })
+
+function digitarCep(valorDigitado) {
+    const numeros = String(valorDigitado ?? '')
+        .replace(/\D/g,"")
+        .slice(0,8)
+
+        form.cep = numeros
+
+        cepFormatado.value = numeros
+            .replace(/(\d{5})(\d)/, '$1-$2')
+}
+
+function formatarCpf(valorDigitado) {  //mais uma vez, função necessaria tanto para a de baixo como para a formatação na tela
+    const numeros = String(valorDigitado ?? '')
+        .replace(/\D/g, '')
+        .slice(0, 11)
+
+    return numeros 
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+}
+
+function digitarCpf(valorDigitado) {
+    const numeros = valorDigitado
+        .replace(/\D/g,"")
+        .slice(0,11)
+
+    form.cpf = numeros
+
+    cpfFormatado.value = formatarCpf(numeros)
+
+}
+
+function formatarTelefone(telefone) { //mais uma vez, função necessaria tanto para a de baixo como para a formatação na tela
+    const numeros = String(telefone ?? '')
+        .replace(/\D/g, '')
+        .slice(0, 11)
+
+    if (numeros.length <= 10) {
+        return numeros
+            .replace(/^(\d{2})(\d)/, '($1) $2')
+            .replace(/(\d{4})(\d)/, '$1-$2')
+    }
+
+    return numeros
+        .replace(/^(\d{2})(\d)/, '($1) $2')
+        .replace(/(\d{5})(\d)/, '$1-$2')
+}
+
+function digitarTelefone(valorDigitado) {
+    const numeros = valorDigitado
+        .replace(/\D/g,"")
+        .slice(0,11)
+
+    form.telefone = numeros
+
+    telefoneFormatado.value = formatarTelefone(numeros)
+
+}
+
 </script>
 
 <template>
@@ -161,10 +237,20 @@ onMounted(() => { loadUsuarios(); loadCartorios() })
         </div>
 
         <DataTable :columns="columns" :rows="usuarios" :loading="loading" @edit="openEdit" @delete="remove">
+            <template #cell-cpf="{ row }">
+                {{ formatarCpf(row.cpf) }}
+            </template>
+
+            <template #cell-telefone="{ row }">
+                {{ formatarTelefone(row.telefone) }}
+            </template>
+
             <template #cell-cidade="{ row }">
                 {{ row.cidade }}{{ row.estado ? ` / ${row.estado}` : '' }}
             </template>
-            <template #cell-cartorio="{ row }">{{ row.cartorio?.nome ?? '—' }}</template>
+
+            <template #cell-cartorio="{ row }">{{ row.cartorio?.nome ?? '—' }}
+            </template>
         </DataTable>
 
         <Pagination :meta="meta" @change="onPage" />
@@ -173,7 +259,15 @@ onMounted(() => { loadUsuarios(); loadCartorios() })
         <ModalDialog :open="showModal" :title="isEditing ? 'Editar Usuário' : 'Novo Usuário'" size="lg" @close="showModal = false">
             <form class="form-grid" @submit.prevent="save">
                 <FormField label="Nome"  :required="true" v-model="form.nome"  :error="errors.nome?.[0]" class="col-span-2" />
-                <FormField label="CPF"   :required="true" v-model="form.cpf"   :error="errors.cpf?.[0]"  placeholder="000.000.000-00" />
+                <FormField 
+                    label="CPF"   
+                    :required="true" 
+                    :model-value="cpfFormatado"
+                    @update:model-value="digitarCpf"
+                    :error="errors.cpf?.[0]"  
+                    placeholder="000.000.000-00" 
+                    maxlength="14"
+                    />
                 <FormField label="E-mail" :required="true" v-model="form.email" :error="errors.email?.[0]" type="email" />
                 <FormField
                     :label="isEditing ? 'Nova Senha (opcional)' : 'Senha'"
@@ -188,11 +282,24 @@ onMounted(() => { loadUsuarios(); loadCartorios() })
                     v-model="form.password_confirmation"
                     type="password"
                 />
-                <FormField label="Telefone" v-model="form.telefone" :error="errors.telefone?.[0]" />
+                <FormField 
+                    label="Telefone" 
+                    :model-value="telefoneFormatado"
+                    @update:model-value="digitarTelefone"
+                    :error="errors.telefone?.[0]" 
+                    maxlength="15"
+                    />
                 <FormField label="Endereço" v-model="form.endereco" :error="errors.endereco?.[0]" />
                 <FormField label="Cidade"   v-model="form.cidade"   :error="errors.cidade?.[0]" />
                 <FormField label="Estado (UF)" v-model="form.estado" :error="errors.estado?.[0]" placeholder="SP" />
-                <FormField label="CEP"      v-model="form.cep"       :error="errors.cep?.[0]" placeholder="00000-000" />
+                <FormField 
+                    label="CEP"      
+                    :model-value="cepFormatado"
+                    @update:model-value="digitarCep"    
+                    :error="errors.cep?.[0]" 
+                    placeholder="00000-000" 
+                    maxlength="9"
+                    />
 
                 <div class="form-field">
                     <label>Cartório</label>

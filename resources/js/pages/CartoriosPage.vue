@@ -20,6 +20,11 @@ const isEditing  = ref(false)
 const saving     = ref(false)
 const errors     = ref({})
 
+const cnpjFormatado = ref('')
+const cepFormatado = ref('')
+const responsavelCpfFormatado = ref('')
+const telefoneFormatado = ref('')
+
 const form = reactive({
     idcartorio:       null,
     nome:             '',
@@ -50,6 +55,7 @@ async function loadCartorios() {
         const { data } = await api.get('/cartorios', {
             params: { search: search.value || undefined, page: page.value },
         })
+
         cartorios.value = data.data
         meta.value = { current_page: data.current_page, last_page: data.last_page }
     } catch {
@@ -67,6 +73,12 @@ function openCreate() {
         logradouro: '', numero: '', bairro: '', cidade: '', estado: '',
         cep: '', responsavel_nome: '', responsavel_cpf: '',
     })
+
+    cnpjFormatado.value = ''
+    cepFormatado.value = ''
+    responsavelCpfFormatado.value =''
+    telefoneFormatado.value = ''
+
     showModal.value = true
 }
 
@@ -88,6 +100,12 @@ function openEdit(row) {
         responsavel_nome: row.responsavel_nome ?? '',
         responsavel_cpf:  row.responsavel_cpf  ?? '',
     })
+
+    digitarCnpj(form.cnpj)
+    digitarCep(form.cep)
+    digitarResponsavelCpf(form.responsavel_cpf)
+    digitarTelefone(form.telefone)
+
     showModal.value = true
 }
 
@@ -131,6 +149,82 @@ function onSearch() { page.value = 1; loadCartorios() }
 function onPage(p)  { page.value = p; loadCartorios() }
 
 onMounted(loadCartorios)
+
+function formatarCnpj(cnpj) {
+    const caracteres = String(cnpj ?? '')
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, '')
+        .slice(0,14)
+    
+    return caracteres
+        .replace(/([A-Z0-9]{2})([A-Z0-9])/, '$1.$2')
+        .replace(/([A-Z0-9]{3})([A-Z0-9])/, '$1.$2')
+        .replace(/([A-Z0-9]{3})([A-Z0-9])/, '$1/$2')
+        .replace(/([A-Z0-9]{4})([A-Z0-9]{1,2})$/, '$1-$2')
+}
+
+function digitarCnpj (valorDigitado) {
+    const caracteres = valorDigitado
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, '')
+        .slice(0,14)
+
+    form.cnpj = caracteres
+
+    cnpjFormatado.value = formatarCnpj(caracteres)
+}
+
+function digitarCep(valorDigitado) {
+    const numeros = String(valorDigitado ?? '')
+        .replace(/\D/g,"")
+        .slice(0,8)
+
+        form.cep = numeros
+
+        cepFormatado.value = numeros
+            .replace(/(\d{5})(\d)/, '$1-$2')
+}
+
+function digitarResponsavelCpf(valorDigitado) {
+    const numeros = valorDigitado
+        .replace(/\D/g,"")
+        .slice(0,11)
+
+    form.responsavel_cpf = numeros
+
+    responsavelCpfFormatado.value = numeros
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+
+}
+
+function formatarTelefone(telefone) { //vai ser usada na função de baixo
+    const numeros = String(telefone ?? '')
+        .replace(/\D/g, '')
+        .slice(0, 11)
+
+    if (numeros.length <= 10) {
+        return numeros
+            .replace(/^(\d{2})(\d)/, '($1) $2')
+            .replace(/(\d{4})(\d)/, '$1-$2')
+    }
+
+    return numeros
+        .replace(/^(\d{2})(\d)/, '($1) $2')
+        .replace(/(\d{5})(\d)/, '$1-$2')
+}
+
+function digitarTelefone(valorDigitado) {
+    const numeros = valorDigitado
+        .replace(/\D/g,"")
+        .slice(0,11)
+
+    form.telefone = numeros
+
+    telefoneFormatado.value = formatarTelefone(numeros)
+
+}
 </script>
 
 <template>
@@ -152,6 +246,14 @@ onMounted(loadCartorios)
             @edit="openEdit"
             @delete="remove"
         >
+            <template #cell-cnpj="{ row }">
+                {{ formatarCnpj(row.cnpj) }}
+            </template>
+
+            <template #cell-telefone="{ row }">
+                {{ row.telefone ? formatarTelefone(row.telefone) : '—' }}
+            </template>
+
             <template #cell-cidade="{ row }">
                 {{ row.cidade }}{{ row.estado ? ` / ${row.estado}` : '' }}
             </template>
@@ -163,17 +265,46 @@ onMounted(loadCartorios)
         <ModalDialog :open="showModal" :title="isEditing ? 'Editar Cartório' : 'Novo Cartório'" size="lg" @close="showModal = false">
             <form class="form-grid" @submit.prevent="save">
                 <FormField label="Nome"   :required="true"  v-model="form.nome"     :error="errors.nome?.[0]" />
-                <FormField label="CNPJ"   :required="true"  v-model="form.cnpj"     :error="errors.cnpj?.[0]" placeholder="00.000.000/0001-00" />
-                <FormField label="Telefone"   v-model="form.telefone"  :error="errors.telefone?.[0]" />
+                <FormField 
+                    label="CNPJ"   
+                    :required="true"  
+                    :model-value="cnpjFormatado"
+                    @update:model-value="digitarCnpj"  
+                    :error="errors.cnpj?.[0]" 
+                    placeholder="00.000.000/0001-00" 
+                    maxlength="18"
+                    />
+                <FormField 
+                    label="Telefone"   
+                    :model-value="telefoneFormatado"
+                    @update:model-value="digitarTelefone"
+                    :error="errors.telefone?.[0]" 
+                    placeholder="(00) 00000-0000"
+                    maxlength="15"
+                    />
                 <FormField label="E-mail"     v-model="form.email"     :error="errors.email?.[0]" type="email" />
                 <FormField label="Logradouro" v-model="form.logradouro" :error="errors.logradouro?.[0]" class="col-span-2" />
                 <FormField label="Número"     v-model="form.numero"     :error="errors.numero?.[0]" type="number" />
                 <FormField label="Bairro"     v-model="form.bairro"     :error="errors.bairro?.[0]" />
                 <FormField label="Cidade"     v-model="form.cidade"     :error="errors.cidade?.[0]" />
                 <FormField label="Estado (UF)" v-model="form.estado"   :error="errors.estado?.[0]" placeholder="SP" />
-                <FormField label="CEP"        v-model="form.cep"        :error="errors.cep?.[0]" placeholder="00000-000" />
+                <FormField 
+                    label="CEP"        
+                    :model-value="cepFormatado"
+                    @update:model-value="digitarCep"  
+                    :error="errors.cep?.[0]" 
+                    placeholder="00000-000" 
+                    maxlength="9"
+                    />
                 <FormField label="Responsável — Nome" v-model="form.responsavel_nome" :error="errors.responsavel_nome?.[0]" />
-                <FormField label="Responsável — CPF"  v-model="form.responsavel_cpf"  :error="errors.responsavel_cpf?.[0]" placeholder="000.000.000-00" />
+                <FormField 
+                    label="Responsável — CPF"  
+                    :model-value="responsavelCpfFormatado" 
+                    @update:model-value="digitarResponsavelCpf"
+                    :error="errors.responsavel_cpf?.[0]" 
+                    placeholder="000.000.000-00" 
+                    maxlength="14"
+                    />
 
                 <div class="form-actions">
                     <button type="button" class="btn-secondary" @click="showModal = false">Cancelar</button>

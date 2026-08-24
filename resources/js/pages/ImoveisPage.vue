@@ -22,6 +22,7 @@ const showModal = ref(false)
 const isEditing = ref(false)
 const saving    = ref(false)
 const errors    = ref({})
+
 const proprietarioCpfFormatado   = ref('')
 const cepFormatado = ref('')
 const valorAvaliadoFormatado = ref('')
