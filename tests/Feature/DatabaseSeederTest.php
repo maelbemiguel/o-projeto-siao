@@ -6,6 +6,27 @@ use App\Models\Proprietario;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
+
+it('creates the expected portable foreign keys for imoveis', function () {
+    $foreignKeys = collect(Schema::getForeignKeys('imovel'));
+
+    $cartorioForeignKey = $foreignKeys->first(
+        fn (array $foreignKey): bool => $foreignKey['columns'] === ['cartorio_id']
+    );
+    $proprietarioForeignKey = $foreignKeys->first(
+        fn (array $foreignKey): bool => $foreignKey['columns'] === ['proprietario_id']
+    );
+
+    expect($cartorioForeignKey)->not->toBeNull()
+        ->and($cartorioForeignKey['foreign_table'])->toBe('cartorio')
+        ->and($cartorioForeignKey['foreign_columns'])->toBe(['idcartorio'])
+        ->and($cartorioForeignKey['on_delete'])->toBe('set null')
+        ->and($proprietarioForeignKey)->not->toBeNull()
+        ->and($proprietarioForeignKey['foreign_table'])->toBe('proprietario')
+        ->and($proprietarioForeignKey['foreign_columns'])->toBe(['idproprietario'])
+        ->and($proprietarioForeignKey['on_delete'])->toBe('set null');
+});
 
 it('seeds a coherent dataset for the application', function () {
     $this->seed(DatabaseSeeder::class);

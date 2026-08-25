@@ -2,8 +2,6 @@ name: tests
 
 on:
   push:
-    branches:
-      - main
   pull_request:
 
 permissions:
@@ -12,20 +10,6 @@ permissions:
 jobs:
   ci:
     runs-on: ubuntu-latest
-
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_DATABASE: db_sistema
-          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
 
     steps:
       - name: Checkout code
@@ -37,30 +21,20 @@ jobs:
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
         with:
           php-version: '8.4'
+          extensions: mbstring, pdo_sqlite, sqlite3, xml
           tools: composer:v2
           coverage: none
 
-      - name: Setup Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: '22'
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
 
-      - name: Setup Application
-        env:
-          DB_CONNECTION: mysql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-          DB_DATABASE: db_sistema
-          DB_USERNAME: root
-          DB_PASSWORD: ""
-        run: composer setup
+      - name: Prepare application
+        run: |
+          cp .env.example .env
+          php artisan key:generate
 
-      - name: Run CI Checks
+      - name: Run Test Suite
         env:
-          DB_CONNECTION: mysql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-          DB_DATABASE: db_sistema
-          DB_USERNAME: root
-          DB_PASSWORD: ""
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
         run: php artisan test

@@ -9,21 +9,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Dropa a FK antiga somente se ainda existir (pode ter sido removida em tentativa anterior)
-        if (Schema::hasTable('imovel')) {
-            $fks = DB::select("
-                SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS
-                WHERE TABLE_SCHEMA = DATABASE()
-                  AND TABLE_NAME = 'imovel'
-                  AND CONSTRAINT_TYPE = 'FOREIGN KEY'
-                  AND CONSTRAINT_NAME = 'imovel_proprietario_id_foreign'
-            ");
-
-            if (! empty($fks)) {
-                Schema::table('imovel', function (Blueprint $table) {
-                    $table->dropForeign(['proprietario_id']);
-                });
-            }
+        if (
+            Schema::hasTable('imovel') &&
+            Schema::hasForeignKey('imovel', ['proprietario_id'])
+        ) {
+            Schema::table('imovel', function (Blueprint $table) {
+                $table->dropForeign(['proprietario_id']);
+            });
         }
 
         // Anula proprietario_id de registros que apontavam para usuario
