@@ -13,6 +13,20 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: db_sistema
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -32,7 +46,21 @@ jobs:
           node-version: '22'
 
       - name: Setup Application
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: db_sistema
+          DB_USERNAME: root
+          DB_PASSWORD: ""
         run: composer setup
 
       - name: Run CI Checks
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: db_sistema
+          DB_USERNAME: root
+          DB_PASSWORD: ""
         run: composer ci:check
