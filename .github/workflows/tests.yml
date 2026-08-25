@@ -63,4 +63,4 @@ jobs:
           DB_DATABASE: db_sistema
           DB_USERNAME: root
           DB_PASSWORD: ""
-        run: composer ci:check
+        run: php artisan test
