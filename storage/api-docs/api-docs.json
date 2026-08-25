@@ -1,0 +1,1473 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Sião Cartórios — API",
+        "description": "API de gestão cartorial: cartórios, imóveis e usuários.",
+        "contact": {
+            "email": "suporte@siao.com.br"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Servidor local"
+        }
+    ],
+    "paths": {
+        "/api/auth/login": {
+            "post": {
+                "tags": [
+                    "Autenticação"
+                ],
+                "summary": "Login do usuário",
+                "description": "Autentica o usuário e retorna um token Bearer.",
+                "operationId": "dd51a484b7fa0f97c7680fdbde14cf5f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@siao.com.br"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login realizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string"
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Credenciais inválidas"
+                    }
+                }
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "tags": [
+                    "Autenticação"
+                ],
+                "summary": "Logout do usuário",
+                "description": "Revoga o token atual do usuário autenticado.",
+                "operationId": "df9bdc6c7a6d9f20b983526b2ec0f698",
+                "responses": {
+                    "200": {
+                        "description": "Logout realizado com sucesso"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/me": {
+            "get": {
+                "tags": [
+                    "Autenticação"
+                ],
+                "summary": "Dados do usuário autenticado",
+                "operationId": "b5de204f5e452ef51327c691aa99e77c",
+                "responses": {
+                    "200": {
+                        "description": "Dados do usuário autenticado"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/cartorios": {
+            "get": {
+                "tags": [
+                    "Cartórios"
+                ],
+                "summary": "Listar todos os cartórios",
+                "operationId": "509b482f9a18cb5cb4d4183c5504962a",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Busca por nome ou CNPJ",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Itens por página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada de cartórios"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Cartórios"
+                ],
+                "summary": "Criar um cartório",
+                "operationId": "3740e433dd805bf8e6edc1b98bb032dd",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nome",
+                                    "cnpj"
+                                ],
+                                "properties": {
+                                    "nome": {
+                                        "type": "string",
+                                        "example": "Cartório 1º Ofício"
+                                    },
+                                    "cnpj": {
+                                        "type": "string",
+                                        "example": "12.345.678/0001-90"
+                                    },
+                                    "telefone": {
+                                        "type": "string",
+                                        "example": "(11) 3333-4444"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "contato@cartorio.com.br"
+                                    },
+                                    "logradouro": {
+                                        "type": "string",
+                                        "example": "Rua das Flores"
+                                    },
+                                    "numero": {
+                                        "type": "integer",
+                                        "example": 100
+                                    },
+                                    "bairro": {
+                                        "type": "string",
+                                        "example": "Centro"
+                                    },
+                                    "cidade": {
+                                        "type": "string",
+                                        "example": "São Paulo"
+                                    },
+                                    "estado": {
+                                        "type": "string",
+                                        "example": "SP"
+                                    },
+                                    "cep": {
+                                        "type": "string",
+                                        "example": "01310-100"
+                                    },
+                                    "responsavel_nome": {
+                                        "type": "string",
+                                        "example": "João Silva"
+                                    },
+                                    "responsavel_cpf": {
+                                        "type": "string",
+                                        "example": "123.456.789-00"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Cartório criado"
+                    },
+                    "422": {
+                        "description": "Dados inválidos"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/cartorios/{id}": {
+            "get": {
+                "tags": [
+                    "Cartórios"
+                ],
+                "summary": "Exibir um cartório",
+                "operationId": "2439f3df5c82281c7b0b6b5d489dfc4f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dados do cartório"
+                    },
+                    "404": {
+                        "description": "Cartório não encontrado"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Cartórios"
+                ],
+                "summary": "Atualizar um cartório",
+                "operationId": "1a74ac68fd800a626593a5afc5881b6e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nome": {
+                                        "type": "string"
+                                    },
+                                    "telefone": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "cidade": {
+                                        "type": "string"
+                                    },
+                                    "estado": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cartório atualizado"
+                    },
+                    "404": {
+                        "description": "Cartório não encontrado"
+                    },
+                    "422": {
+                        "description": "Dados inválidos"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Cartórios"
+                ],
+                "summary": "Remover um cartório (soft delete)",
+                "operationId": "3605935c606c46e2975639d2c5e19fa8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cartório removido"
+                    },
+                    "404": {
+                        "description": "Cartório não encontrado"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/imoveis": {
+            "get": {
+                "tags": [
+                    "Imóveis"
+                ],
+                "summary": "Listar todos os imóveis",
+                "operationId": "18207e2f00de04450ef8a0b7a6054dcf",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Busca por matrícula, logradouro ou cidade",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filtrar por status",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "cartorio_id",
+                        "in": "query",
+                        "description": "Filtrar por cartório",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada de imóveis"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Imóveis"
+                ],
+                "summary": "Criar um imóvel",
+                "operationId": "6cc7454cff7e7d205100ee044289e5eb",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "matricula"
+                                ],
+                                "properties": {
+                                    "matricula": {
+                                        "type": "string",
+                                        "example": "MAT-001"
+                                    },
+                                    "tipo": {
+                                        "type": "string",
+                                        "example": "Residencial"
+                                    },
+                                    "logradouro": {
+                                        "type": "string",
+                                        "example": "Av. Paulista"
+                                    },
+                                    "numero": {
+                                        "type": "integer",
+                                        "example": 1000
+                                    },
+                                    "bairro": {
+                                        "type": "string",
+                                        "example": "Bela Vista"
+                                    },
+                                    "cidade": {
+                                        "type": "string",
+                                        "example": "São Paulo"
+                                    },
+                                    "estado": {
+                                        "type": "string",
+                                        "example": "SP"
+                                    },
+                                    "cep": {
+                                        "type": "string",
+                                        "example": "01310-100"
+                                    },
+                                    "area_total": {
+                                        "type": "number",
+                                        "example": 120.5
+                                    },
+                                    "valor_avaliado": {
+                                        "type": "number",
+                                        "example": 850000
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "example": "ativo"
+                                    },
+                                    "proprietario_nome": {
+                                        "type": "string",
+                                        "example": "Maria Souza"
+                                    },
+                                    "proprietario_cpf": {
+                                        "type": "string",
+                                        "example": "987.654.321-00"
+                                    },
+                                    "cartorio_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Imóvel criado"
+                    },
+                    "422": {
+                        "description": "Dados inválidos"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/imoveis/{id}": {
+            "get": {
+                "tags": [
+                    "Imóveis"
+                ],
+                "summary": "Exibir um imóvel",
+                "operationId": "2bae86bd1f88250288215554c244f4e3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dados do imóvel"
+                    },
+                    "404": {
+                        "description": "Imóvel não encontrado"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Imóveis"
+                ],
+                "summary": "Atualizar um imóvel",
+                "operationId": "4d173a0caaba014ed462e9e5685baf3c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "tipo": {
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "type": "string"
+                                    },
+                                    "valor_avaliado": {
+                                        "type": "number"
+                                    },
+                                    "cartorio_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Imóvel atualizado"
+                    },
+                    "404": {
+                        "description": "Imóvel não encontrado"
+                    },
+                    "422": {
+                        "description": "Dados inválidos"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Imóveis"
+                ],
+                "summary": "Remover um imóvel (soft delete)",
+                "operationId": "c6016cc09bd69f608b5634e8c13b1308",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Imóvel removido"
+                    },
+                    "404": {
+                        "description": "Imóvel não encontrado"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/proprietarios/busca": {
+            "get": {
+                "tags": [
+                    "Proprietários"
+                ],
+                "summary": "Busca rápida de proprietários para autocomplete",
+                "operationId": "7b692d0d7f951ce927888d72c0306514",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Termo de busca: nome, CPF, e-mail ou telefone",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de proprietários encontrados"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/proprietarios": {
+            "get": {
+                "tags": [
+                    "Proprietários"
+                ],
+                "summary": "Listar todos os proprietários",
+                "operationId": "59a5a0fdbf65a37c21d04b5ff11e5b60",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Busca por nome, CPF ou cidade",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "cidade",
+                        "in": "query",
+                        "description": "Filtrar por cidade",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "estado",
+                        "in": "query",
+                        "description": "Filtrar por estado (UF)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada de proprietários"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Proprietários"
+                ],
+                "summary": "Criar um proprietário",
+                "operationId": "b4e24094b46998b21bac56c481891a06",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nome",
+                                    "cpf"
+                                ],
+                                "properties": {
+                                    "nome": {
+                                        "type": "string",
+                                        "example": "João da Silva"
+                                    },
+                                    "cpf": {
+                                        "type": "string",
+                                        "example": "12345678900"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "joao@email.com"
+                                    },
+                                    "telefone": {
+                                        "type": "string",
+                                        "example": "11987654321"
+                                    },
+                                    "logradouro": {
+                                        "type": "string",
+                                        "example": "Rua das Flores"
+                                    },
+                                    "numero": {
+                                        "type": "integer",
+                                        "example": 42
+                                    },
+                                    "bairro": {
+                                        "type": "string",
+                                        "example": "Centro"
+                                    },
+                                    "cidade": {
+                                        "type": "string",
+                                        "example": "São Paulo"
+                                    },
+                                    "estado": {
+                                        "type": "string",
+                                        "example": "SP"
+                                    },
+                                    "cep": {
+                                        "type": "string",
+                                        "example": "01310100"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Proprietário criado"
+                    },
+                    "422": {
+                        "description": "Dados inválidos"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/proprietarios/{id}": {
+            "get": {
+                "tags": [
+                    "Proprietários"
+                ],
+                "summary": "Exibir um proprietário",
+                "operationId": "d0e0b107fecbb97001cfbd19cad8da32",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dados do proprietário"
+                    },
+                    "404": {
+                        "description": "Proprietário não encontrado"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Proprietários"
+                ],
+                "summary": "Atualizar um proprietário",
+                "operationId": "460001a1443c840cfdbd316ca568eb3d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nome": {
+                                        "type": "string"
+                                    },
+                                    "cpf": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "telefone": {
+                                        "type": "string"
+                                    },
+                                    "cidade": {
+                                        "type": "string"
+                                    },
+                                    "estado": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Proprietário atualizado"
+                    },
+                    "404": {
+                        "description": "Proprietário não encontrado"
+                    },
+                    "422": {
+                        "description": "Dados inválidos"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Proprietários"
+                ],
+                "summary": "Remover um proprietário (soft delete)",
+                "operationId": "c0bbcd1a6b47e8d5fa21ce290aaf294d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Proprietário removido"
+                    },
+                    "404": {
+                        "description": "Proprietário não encontrado"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/relatorios/resumo": {
+            "get": {
+                "tags": [
+                    "Relatórios"
+                ],
+                "summary": "Resumo geral do sistema",
+                "description": "Retorna totais de cartórios, usuários e imóveis, além de imóveis por status.",
+                "operationId": "7bbf00b36ff5e688e4e43f6057c1d42f",
+                "responses": {
+                    "200": {
+                        "description": "Resumo geral",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "total_cartorios": {
+                                            "type": "integer"
+                                        },
+                                        "total_usuarios": {
+                                            "type": "integer"
+                                        },
+                                        "total_imoveis": {
+                                            "type": "integer"
+                                        },
+                                        "imoveis_por_status": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "valor_total_avaliado": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/relatorios/imoveis-por-cartorio": {
+            "get": {
+                "tags": [
+                    "Relatórios"
+                ],
+                "summary": "Imóveis agrupados por cartório",
+                "operationId": "4926542ac814879b279855cb61308b9c",
+                "responses": {
+                    "200": {
+                        "description": "Imóveis por cartório"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/relatorios/imoveis-por-status": {
+            "get": {
+                "tags": [
+                    "Relatórios"
+                ],
+                "summary": "Imóveis agrupados por status",
+                "operationId": "de76d4e089cc1e3eafa7868053b28f28",
+                "responses": {
+                    "200": {
+                        "description": "Imóveis por status"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/relatorios/usuarios-por-cartorio": {
+            "get": {
+                "tags": [
+                    "Relatórios"
+                ],
+                "summary": "Usuários agrupados por cartório",
+                "operationId": "0bb55a1954dee6e3fa4732e5a7532f7b",
+                "responses": {
+                    "200": {
+                        "description": "Usuários por cartório"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/relatorios/imoveis": {
+            "get": {
+                "tags": [
+                    "Relatórios"
+                ],
+                "summary": "Relatório detalhado de imóveis com filtros",
+                "operationId": "ac37bbcfbc04f6f31904ca90725af1fd",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "cartorio_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "cidade",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "estado",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "valor_min",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "number"
+                        }
+                    },
+                    {
+                        "name": "valor_max",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "number"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Relatório de imóveis"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/usuarios": {
+            "get": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Listar todos os usuários",
+                "operationId": "d57cb6c6a223fe9801b81b52dcac45df",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Busca por nome, CPF ou e-mail",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "cartorio_id",
+                        "in": "query",
+                        "description": "Filtrar por cartório",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada de usuários"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Criar um usuário",
+                "operationId": "96d159a6919ad7ade81fd7af5c7a6be8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nome",
+                                    "cpf",
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "nome": {
+                                        "type": "string",
+                                        "example": "João Silva"
+                                    },
+                                    "cpf": {
+                                        "type": "string",
+                                        "example": "123.456.789-00"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "joao@siao.com.br"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "senha1234"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "example": "senha1234"
+                                    },
+                                    "telefone": {
+                                        "type": "string",
+                                        "example": "(11) 91234-5678"
+                                    },
+                                    "endereco": {
+                                        "type": "string",
+                                        "example": "Rua A, 10"
+                                    },
+                                    "cidade": {
+                                        "type": "string",
+                                        "example": "São Paulo"
+                                    },
+                                    "estado": {
+                                        "type": "string",
+                                        "example": "SP"
+                                    },
+                                    "cep": {
+                                        "type": "string",
+                                        "example": "01310-100"
+                                    },
+                                    "cartorio_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuário criado"
+                    },
+                    "422": {
+                        "description": "Dados inválidos"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/usuarios/{id}": {
+            "get": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Exibir um usuário",
+                "operationId": "377032c75382a00d9fcafd558822f36c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dados do usuário"
+                    },
+                    "404": {
+                        "description": "Usuário não encontrado"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Atualizar um usuário",
+                "operationId": "ee6ffe04a5be33eeca7f8f90c91d9803",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nome": {
+                                        "type": "string"
+                                    },
+                                    "telefone": {
+                                        "type": "string"
+                                    },
+                                    "cidade": {
+                                        "type": "string"
+                                    },
+                                    "estado": {
+                                        "type": "string"
+                                    },
+                                    "cartorio_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Usuário atualizado"
+                    },
+                    "404": {
+                        "description": "Usuário não encontrado"
+                    },
+                    "422": {
+                        "description": "Dados inválidos"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Remover um usuário (soft delete)",
+                "operationId": "0f00f1d6dae33b81a874725503534c06",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuário removido"
+                    },
+                    "404": {
+                        "description": "Usuário não encontrado"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "description": "Informe o token retornado pelo endpoint /api/auth/login",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Autenticação",
+            "description": "Autenticação"
+        },
+        {
+            "name": "Cartórios",
+            "description": "Cartórios"
+        },
+        {
+            "name": "Imóveis",
+            "description": "Imóveis"
+        },
+        {
+            "name": "Proprietários",
+            "description": "Proprietários"
+        },
+        {
+            "name": "Relatórios",
+            "description": "Relatórios"
+        },
+        {
+            "name": "Usuários",
+            "description": "Usuários"
+        }
+    ]
+}
