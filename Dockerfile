@@ -36,6 +36,8 @@ WORKDIR /var/www/html
 
 # Configuração do PHP
 COPY docker/php/local.ini /usr/local/etc/php/conf.d/local.ini
+COPY docker/php/entrypoint.sh /usr/local/bin/siao-entrypoint
+RUN chmod 755 /usr/local/bin/siao-entrypoint
 
 # Dependências PHP (cache de camada)
 COPY composer.json composer.lock ./
@@ -61,9 +63,16 @@ RUN composer dump-autoload --optimize
 RUN pnpm run build
 
 # Permissões
-RUN chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+RUN mkdir -p \
+        storage/framework/cache/data \
+        storage/framework/sessions \
+        storage/framework/views \
+        storage/logs \
+        bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R ug+rwX storage bootstrap/cache
 
 EXPOSE 9000
 
+ENTRYPOINT ["/usr/local/bin/siao-entrypoint"]
 CMD ["php-fpm"]

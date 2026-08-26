@@ -105,6 +105,21 @@ jobs:
           echo "Timed out waiting for MySQL and PHP-FPM."
           exit 1
 
+      - name: Verify Laravel writable directories
+        run: |
+          docker compose exec -T --user www-data "${LARAVEL_SERVICE}" sh -c '
+            for directory in \
+              storage/framework/cache \
+              storage/framework/sessions \
+              storage/framework/views \
+              storage/logs \
+              bootstrap/cache
+            do
+              test -d "${directory}"
+              test -w "${directory}"
+            done
+          '
+
       - name: Run database migrations
         timeout-minutes: 5
         run: docker compose exec -T "${LARAVEL_SERVICE}" php artisan migrate --force --no-interaction
@@ -191,7 +206,16 @@ jobs:
 
           if [[ "${app_state}" == "running" ]]; then
             docker compose exec -T "${LARAVEL_SERVICE}" sh -c '
+              echo "Writable directory ownership and permissions:"
+              ls -ld \
+                storage/framework/cache \
+                storage/framework/sessions \
+                storage/framework/views \
+                storage/logs \
+                bootstrap/cache 2>&1 || true
+
               if [ -f storage/logs/laravel.log ]; then
+                echo "Last 500 lines of storage/logs/laravel.log:"
                 tail -n 500 storage/logs/laravel.log
               else
                 echo "storage/logs/laravel.log does not exist."
