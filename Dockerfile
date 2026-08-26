@@ -9,6 +9,7 @@ RUN apk add --no-cache \
         libjpeg-turbo-dev \
         libwebp-dev \
         libzip-dev \
+        sqlite-dev \
         oniguruma-dev \
         icu-dev \
         nodejs \
@@ -16,6 +17,7 @@ RUN apk add --no-cache \
     && docker-php-ext-install \
         pdo \
         pdo_mysql \
+        pdo_sqlite \
         mbstring \
         zip \
         bcmath \
@@ -37,7 +39,12 @@ COPY docker/php/local.ini /usr/local/etc/php/conf.d/local.ini
 
 # Dependências PHP (cache de camada)
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
+ARG INSTALL_DEV_DEPENDENCIES=false
+RUN if [ "$INSTALL_DEV_DEPENDENCIES" = "true" ]; then \
+        composer install --no-interaction --no-scripts --no-autoloader --prefer-dist; \
+    else \
+        composer install --no-dev --no-interaction --no-scripts --no-autoloader --prefer-dist; \
+    fi
 
 # Dependências JS (cache de camada)
 COPY package.json pnpm-workspace.yaml* package-lock.json* pnpm-lock.yaml* ./

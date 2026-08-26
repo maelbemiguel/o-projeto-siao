@@ -5,6 +5,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        INSTALL_DEV_DEPENDENCIES: "${INSTALL_DEV_DEPENDENCIES:-false}"
     container_name: siao_app
     restart: unless-stopped
     working_dir: /var/www/html
@@ -12,12 +14,15 @@ services:
       - .:/var/www/html
       - /var/www/html/node_modules
       - /var/www/html/vendor
+      - /var/www/html/storage
+      - /var/www/html/bootstrap/cache
+      - siao_build_data:/var/www/html/public/build
     environment:
       APP_NAME: "Sião Cartórios"
-      APP_ENV: local
-      APP_KEY: base64:pZVqJPXVU4i+Ly+NgJbLei66YuHr1RIY7deaoO6EaRA=
-      APP_DEBUG: "true"
-      APP_URL: http://localhost:8080
+      APP_ENV: "${APP_ENV:-local}"
+      APP_KEY: "${APP_KEY:-base64:pZVqJPXVU4i+Ly+NgJbLei66YuHr1RIY7deaoO6EaRA=}"
+      APP_DEBUG: "${APP_DEBUG:-true}"
+      APP_URL: "${APP_URL:-http://localhost:8080}"
 
       APP_LOCALE: pt_BR
       APP_FALLBACK_LOCALE: pt_BR
@@ -59,6 +64,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "php -r 'exit(@fsockopen(\"127.0.0.1\", 9000) ? 0 : 1);'"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
     networks:
       - siao_net
 
@@ -72,8 +83,16 @@ services:
     volumes:
       - .:/var/www/html
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - siao_build_data:/var/www/html/public/build
     depends_on:
-      - app
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/up"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
     networks:
       - siao_net
 
@@ -95,12 +114,14 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "siao", "-psiao_password"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 12
+      start_period: 20s
     networks:
       - siao_net
 
 volumes:
   siao_db_data:
+  siao_build_data:
 
 networks:
   siao_net:
