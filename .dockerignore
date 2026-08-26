@@ -1,0 +1,37 @@
+# Git
+.git
+.gitattributes
+.gitignore
+
+# Node
+node_modules
+
+# Testes e ferramentas de dev
+tests
+phpunit.xml
+phpstan.neon
+pint.json
+.editorconfig
+.prettierrc
+.prettierignore
+eslint.config.js
+
+# Documentação e IDE
+README.md
+.kiro
+.agents
+.codex
+.github
+
+# Artefatos de build locais (serão gerados no container)
+public/build
+public/hot
+storage/framework/cache
+storage/framework/sessions
+storage/framework/views
+storage/logs
+
+# Ambiente local
+.env
+.env.backup
+.env.*.local

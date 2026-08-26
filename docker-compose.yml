@@ -13,19 +13,49 @@ services:
       - /var/www/html/node_modules
       - /var/www/html/vendor
     environment:
+      APP_NAME: "Sião Cartórios"
       APP_ENV: local
       APP_KEY: base64:pZVqJPXVU4i+Ly+NgJbLei66YuHr1RIY7deaoO6EaRA=
       APP_DEBUG: "true"
       APP_URL: http://localhost:8080
+
+      APP_LOCALE: pt_BR
+      APP_FALLBACK_LOCALE: pt_BR
+      APP_FAKER_LOCALE: pt_BR
+
+      APP_MAINTENANCE_DRIVER: file
+
+      LOG_CHANNEL: stack
+      LOG_STACK: single
+      LOG_LEVEL: debug
+
       DB_CONNECTION: mysql
       DB_HOST: db
       DB_PORT: 3306
       DB_DATABASE: db_sistema
       DB_USERNAME: siao
       DB_PASSWORD: siao_password
-      SANCTUM_STATEFUL_DOMAINS: "localhost,localhost:8080"
+
+      SESSION_DRIVER: file
+      SESSION_LIFETIME: 120
+      SESSION_ENCRYPT: "false"
+
+      BROADCAST_CONNECTION: log
+      QUEUE_CONNECTION: database
+      CACHE_STORE: database
+      FILESYSTEM_DISK: local
+
+      SANCTUM_STATEFUL_DOMAINS: "localhost,localhost:8080,127.0.0.1,127.0.0.1:8080"
+
       L5_SWAGGER_GENERATE_ALWAYS: "true"
+      L5_SWAGGER_UI_DOC_EXPANSION: list
+      L5_SWAGGER_UI_PERSIST_AUTHORIZATION: "true"
       L5_SWAGGER_CONST_HOST: "http://localhost:8080"
+
+      MAIL_MAILER: log
+
+      VITE_APP_NAME: "Sião Cartórios"
+      VITE_API_URL: "http://localhost:8080"
     depends_on:
       db:
         condition: service_healthy
