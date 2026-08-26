@@ -1,53 +1,96 @@
 ﻿# Sião Cartórios — Sistema de Gestão Cartorial
 
-API RESTful + SPA Vue.js para gestão de cartórios, imóveis e usuários, desenvolvida como resposta ao Desafio Técnico Sião.
+API RESTful + SPA Vue.js para gestão de cartórios, imóveis, proprietários e usuários, desenvolvida como resposta ao Desafio Técnico Sião.
 
 ---
 
 ## Tecnologias
 
-| Camada    | Stack                                         |
-|-----------|-----------------------------------------------|
-| Backend   | PHP 8.3, Laravel 13, Laravel Sanctum          |
-| Frontend  | Vue 3, Vue Router 4, Axios, Tailwind CSS 4    |
-| Banco     | MySQL 8                                       |
-| Docs API  | Swagger / OpenAPI 3 (L5-Swagger)              |
-| Docker    | PHP-FPM 8.3, Nginx 1.27, MySQL 8.4            |
+| Camada    | Stack                                                        |
+|-----------|--------------------------------------------------------------|
+| Backend   | PHP 8.4, Laravel 13, Laravel Sanctum 4                       |
+| Frontend  | Vue 3, Vue Router 4, Axios, Tailwind CSS 4, Vite 8           |
+| Banco     | MySQL 8.4                                                    |
+| Testes    | Pest 5 (SQLite in-memory)                                    |
+| Docs API  | Swagger / OpenAPI 3 (L5-Swagger 11)                          |
+| Docker    | PHP-FPM 8.4, Nginx 1.27, MySQL 8.4                           |
+| CI        | GitHub Actions                                               |
 
 ---
 
 ## Funcionalidades
 
 - Autenticação via token Bearer (Sanctum)
-- CRUD completo: Cartórios, Imóveis, Usuários, Proprietários
+- CRUD completo: Cartórios, Imóveis, Proprietários, Usuários
 - Soft Delete em todas as entidades
-- Módulo de Relatórios (resumo, por cartório, por status, filtros avançados)
+- Módulo de Relatórios (resumo geral, por cartório, por status, filtros avançados)
 - Documentação interativa Swagger em `/api/documentation`
-- SPA com login, dashboard e páginas CRUD
-- Docker com Nginx + PHP-FPM + MySQL
+- SPA com login, dashboard e páginas de gestão para cada entidade
 
 ---
 
-## Configuração — Ambiente Local (sem Docker)
+## Sobre Usuários e Administradores
+
+O sistema **não possui diferenciação de perfil de acesso** entre usuários. O usuário `admin@siao.com.br` criado pelo seed não tem nenhum papel ou permissão especial, é apenas uma convenção de nomenclatura para facilitar os testes. Todos os usuários autenticados têm exatamente o mesmo nível de acesso à API.
+
+---
+
+## Integração Contínua (CI)
+
+O projeto usa **GitHub Actions** para rodar a suíte de testes automaticamente a cada `push` e `pull_request` para qualquer branch.
+
+O workflow (`.github/workflows/tests.yml`) executa os seguintes passos:
+
+1. Checkout do código
+2. Configura PHP 8.4 com as extensões necessárias (`mbstring`, `pdo_sqlite`, `sqlite3`, `xml`)
+3. Instala dependências Composer
+4. Prepara o ambiente (copia `.env.example` e gera a `APP_KEY`)
+5. Roda o suite de testes com `php artisan test`
+
+Os testes rodam contra **SQLite in-memory** — sem necessidade de banco de dados externo no CI. A configuração fica em `phpunit.xml`.
+
+---
+
+## Docker em Testes (docker-test)
+
+Para validar o ambiente Docker antes de subir para produção, é possível reproduzir o mesmo fluxo do CI localmente usando Docker. O `docker-compose.yml` já inclui o serviço `app` com todas as variáveis de ambiente necessárias. O fluxo equivalente ao CI seria:
+
+```bash
+# Sobe os containers
+docker compose up -d --build
+
+# Roda o suite de testes dentro do container (SQLite in-memory, mesmo do CI)
+docker compose exec app php artisan test
+```
+
+Isso garante que o ambiente Docker está saudável e que os testes passam no mesmo contexto em que a aplicação vai rodar.
+
+---
+
+## Configuração e Execução — Ambiente Local (sem Docker)
 
 ### Pré-requisitos
 
-- PHP 8.3+ com extensões: pdo_mysql, mbstring, zip, bcmath, intl, gd
-- Composer 2
-- Node.js 20+ e npm
-- MySQL 8+
+- **PHP 8.4+** com extensões: `pdo_mysql`, `mbstring`, `zip`, `bcmath`, `intl`, `gd`, `pcntl`
+- **Composer 2**
+- **Node.js 20+** e **npm**
+- **MySQL 8.4+**
 
-### 1. Clone e instale as dependências
+### 1. Clone o repositório
 
 ```bash
 git clone <url-do-repositorio>
 cd siao-cartorios
+```
 
+### 2. Instale as dependências
+
+```bash
 composer install
 npm install
 ```
 
-### 2. Configure o ambiente
+### 3. Configure o ambiente
 
 ```bash
 cp .env.example .env
@@ -65,27 +108,41 @@ DB_USERNAME=root
 DB_PASSWORD=sua_senha
 ```
 
-### 3. Execute as migrations e o seed
+### 4. Execute as migrations e popule o banco
 
 ```bash
 php artisan migrate
 php artisan db:seed
 ```
 
-Isso criará os dados iniciais com dois usuários de teste:
+O seed cria 3 cartórios, 4 usuários, 6 proprietários e 9 imóveis de exemplo.
 
-| E-mail                    | Senha    | Perfil         |
-|---------------------------|----------|----------------|
-| admin@siao.com.br         | password | Administrador  |
-| joao.silva@email.com      | password | Usuário comum  |
+**Usuários criados pelo seed:**
 
-### 4. Compile os assets do frontend
+| E-mail                       | Senha    | Observação                    |
+|------------------------------|----------|-------------------------------|
+| admin@siao.com.br            | password | Convencional — sem privilégio especial |
+| mariana.costa@siao.test      | password | Responsável pelo cartório SP  |
+| rafael.nunes@siao.test       | password | Responsável pelo cartório RJ  |
+| beatriz.almeida@siao.test    | password | Responsável pelo cartório MG  |
+
+> Todos os usuários têm o mesmo nível de acesso. O prefixo "admin" é apenas convencional.
+
+### 5. Compile os assets do frontend
+
+Para uso simples (gera os assets uma vez e encerra):
 
 ```bash
 npm run build
 ```
 
-### 5. Inicie o servidor
+Para desenvolvimento com HMR (Vite em modo watch — rodar em paralelo com `php artisan serve`):
+
+```bash
+npm run dev
+```
+
+### 6. Inicie o servidor
 
 ```bash
 php artisan serve
@@ -95,11 +152,11 @@ Acesse: **http://localhost:8000**
 
 ---
 
-## Configuração — Docker
+## Configuração e Execução — Docker
 
 ### Pré-requisitos
 
-- Docker Desktop (Windows/macOS) ou Docker Engine + Compose (Linux)
+- **Docker Desktop** (Windows/macOS) ou **Docker Engine + Compose** (Linux)
 
 ### 1. Suba os containers
 
@@ -107,29 +164,56 @@ Acesse: **http://localhost:8000**
 docker compose up -d --build
 ```
 
-Isso inicia:
-- `siao_app` — PHP-FPM na porta 9000
-- `siao_nginx` — Nginx na porta **8080**
-- `siao_db` — MySQL na porta **3307** (externo) / 3306 (interno)
+Isso inicia três serviços:
 
-### 2. Execute migrations e seed
+| Container     | Descrição                     | Porta externa |
+|---------------|-------------------------------|---------------|
+| `siao_app`    | PHP-FPM 8.4                   | —             |
+| `siao_nginx`  | Nginx 1.27 (proxy reverso)    | **8080**      |
+| `siao_db`     | MySQL 8.4                     | **3307**      |
+
+### 2. Execute as migrations e popule o banco
+
+Aguarde o healthcheck do MySQL passar (alguns segundos) e então:
 
 ```bash
 docker compose exec app php artisan migrate --force
 docker compose exec app php artisan db:seed --force
 ```
 
-### 3. Acesse
+### 3. Acesse a aplicação
 
-| Serviço       | URL                              |
-|---------------|----------------------------------|
-| Aplicação     | http://localhost:8080            |
-| Swagger UI    | http://localhost:8080/api/documentation |
-| MySQL (ext.)  | localhost:3307                   |
+| Serviço        | URL                                         |
+|----------------|---------------------------------------------|
+| Aplicação      | http://localhost:8080                       |
+| Swagger UI     | http://localhost:8080/api/documentation     |
+| MySQL (externo)| `localhost:3307` — banco `db_sistema`       |
 
-Credenciais Docker MySQL:
-- Banco: `db_sistema`
-- Usuário: `siao` / Senha: `siao_password`
+**Credenciais MySQL (Docker):**
+
+| Campo   | Valor          |
+|---------|----------------|
+| Host    | localhost      |
+| Porta   | 3307           |
+| Banco   | db_sistema     |
+| Usuário | siao           |
+| Senha   | siao_password  |
+
+### 4. Rodar os testes dentro do Docker
+
+```bash
+docker compose exec app php artisan test
+```
+
+Os testes usam SQLite in-memory e não afetam o banco MySQL.
+
+### Parar os containers
+
+```bash
+docker compose down
+# Para remover também o volume do banco:
+docker compose down -v
+```
 
 ---
 
@@ -137,9 +221,8 @@ Credenciais Docker MySQL:
 
 Após iniciar a aplicação, acesse:
 
-```
-http://localhost:8000/api/documentation
-```
+- **Local:** http://localhost:8000/api/documentation
+- **Docker:** http://localhost:8080/api/documentation
 
 Para forçar a regeneração da documentação:
 
@@ -149,62 +232,77 @@ php artisan l5-swagger:generate
 
 ### Autenticação no Swagger
 
-1. Chame `POST /api/auth/login` com email e senha
+1. Chame `POST /api/auth/login` com e-mail e senha
 2. Copie o `token` da resposta
-3. Clique em **Authorize** (botão no topo) e cole `<token>` no campo Bearer
+3. Clique em **Authorize** (canto superior direito) e cole o token no campo Bearer
 4. Todos os endpoints protegidos ficam disponíveis
+
+ps: ficar atento se rodar a endpoint de logout, pois vai precisar fazer a autenticação novamente...
 
 ---
 
 ## Endpoints da API
 
+Todos os endpoints abaixo (exceto `/api/auth/login`) exigem autenticação Bearer.
+
 ### Autenticação
 
-| Método | Endpoint            | Descrição                          | Auth |
-|--------|---------------------|------------------------------------|------|
-| POST   | /api/auth/login     | Login — retorna token Bearer       | ✗    |
-| POST   | /api/auth/logout    | Logout — revoga o token atual      | ✓    |
-| GET    | /api/auth/me        | Dados do usuário autenticado       | ✓    |
+| Método | Endpoint         | Descrição                        | Auth |
+|--------|------------------|----------------------------------|------|
+| POST   | /api/auth/login  | Login — retorna token Bearer     | ✗    |
+| POST   | /api/auth/logout | Logout — revoga o token atual    | ✓    |
+| GET    | /api/auth/me     | Dados do usuário autenticado     | ✓    |
 
 ### Cartórios `/api/cartorios`
 
-| Método | Endpoint              | Descrição                  |
-|--------|-----------------------|----------------------------|
-| GET    | /api/cartorios        | Lista paginada (busca, filtro) |
-| POST   | /api/cartorios        | Criar cartório             |
-| GET    | /api/cartorios/{id}   | Exibir cartório            |
-| PUT    | /api/cartorios/{id}   | Atualizar cartório         |
-| DELETE | /api/cartorios/{id}   | Remover (soft delete)      |
+| Método | Endpoint               | Descrição                          |
+|--------|------------------------|------------------------------------|
+| GET    | /api/cartorios         | Lista paginada (busca e filtros)   |
+| POST   | /api/cartorios         | Criar cartório                     |
+| GET    | /api/cartorios/{id}    | Exibir cartório                    |
+| PUT    | /api/cartorios/{id}    | Atualizar cartório                 |
+| DELETE | /api/cartorios/{id}    | Remover (soft delete)              |
 
 ### Imóveis `/api/imoveis`
 
-| Método | Endpoint              | Descrição                  |
-|--------|-----------------------|----------------------------|
-| GET    | /api/imoveis          | Lista paginada (busca, status, cartório) |
-| POST   | /api/imoveis          | Criar imóvel               |
-| GET    | /api/imoveis/{id}     | Exibir imóvel              |
-| PUT    | /api/imoveis/{id}     | Atualizar imóvel           |
-| DELETE | /api/imoveis/{id}     | Remover (soft delete)      |
+| Método | Endpoint             | Descrição                                   |
+|--------|----------------------|---------------------------------------------|
+| GET    | /api/imoveis         | Lista paginada (busca, status, cartório)    |
+| POST   | /api/imoveis         | Criar imóvel                                |
+| GET    | /api/imoveis/{id}    | Exibir imóvel                               |
+| PUT    | /api/imoveis/{id}    | Atualizar imóvel                            |
+| DELETE | /api/imoveis/{id}    | Remover (soft delete)                       |
+
+### Proprietários `/api/proprietarios`
+
+| Método | Endpoint                    | Descrição                        |
+|--------|-----------------------------|----------------------------------|
+| GET    | /api/proprietarios          | Lista paginada                   |
+| GET    | /api/proprietarios/busca    | Busca rápida por nome/CPF        |
+| POST   | /api/proprietarios          | Criar proprietário               |
+| GET    | /api/proprietarios/{id}     | Exibir proprietário              |
+| PUT    | /api/proprietarios/{id}     | Atualizar proprietário           |
+| DELETE | /api/proprietarios/{id}     | Remover (soft delete)            |
 
 ### Usuários `/api/usuarios`
 
-| Método | Endpoint              | Descrição                  |
-|--------|-----------------------|----------------------------|
-| GET    | /api/usuarios         | Lista paginada (busca, cartório) |
-| POST   | /api/usuarios         | Criar usuário              |
-| GET    | /api/usuarios/{id}    | Exibir usuário             |
-| PUT    | /api/usuarios/{id}    | Atualizar usuário          |
-| DELETE | /api/usuarios/{id}    | Remover (soft delete)      |
+| Método | Endpoint              | Descrição                          |
+|--------|-----------------------|------------------------------------|
+| GET    | /api/usuarios         | Lista paginada (busca, cartório)   |
+| POST   | /api/usuarios         | Criar usuário                      |
+| GET    | /api/usuarios/{id}    | Exibir usuário                     |
+| PUT    | /api/usuarios/{id}    | Atualizar usuário                  |
+| DELETE | /api/usuarios/{id}    | Remover (soft delete)              |
 
 ### Relatórios `/api/relatorios`
 
-| Método | Endpoint                                  | Descrição                        |
-|--------|-------------------------------------------|----------------------------------|
-| GET    | /api/relatorios/resumo                    | Totais gerais do sistema         |
-| GET    | /api/relatorios/imoveis-por-cartorio      | Imóveis agrupados por cartório   |
-| GET    | /api/relatorios/imoveis-por-status        | Imóveis agrupados por status     |
-| GET    | /api/relatorios/usuarios-por-cartorio     | Usuários agrupados por cartório  |
-| GET    | /api/relatorios/imoveis                   | Relatório detalhado com filtros  |
+| Método | Endpoint                              | Descrição                          |
+|--------|---------------------------------------|------------------------------------|
+| GET    | /api/relatorios/resumo                | Totais gerais do sistema           |
+| GET    | /api/relatorios/imoveis-por-cartorio  | Imóveis agrupados por cartório     |
+| GET    | /api/relatorios/imoveis-por-status    | Imóveis agrupados por status       |
+| GET    | /api/relatorios/usuarios-por-cartorio | Usuários agrupados por cartório    |
+| GET    | /api/relatorios/imoveis               | Relatório detalhado com filtros    |
 
 ---
 
@@ -213,28 +311,40 @@ php artisan l5-swagger:generate
 ```
 ├── app/
 │   ├── Http/
-│   │   ├── Controllers/Api/       # AuthController, CartorioController, ...
-│   │   └── Requests/              # FormRequests de validação
-│   └── Models/                    # User, Cartorio, Imovel
+│   │   ├── Controllers/Api/        # AuthController, CartorioController, ...
+│   │   └── Requests/               # FormRequests de validação
+│   └── Models/                     # User, Cartorio, Imovel, Proprietario
 ├── database/
-│   ├── migrations/                # Migrations do domínio + correções
-│   └── seeders/                   # DatabaseSeeder com dados de teste
+│   ├── migrations/                 # Migrations do domínio
+│   ├── factories/                  # Factories para testes
+│   └── seeders/                    # DatabaseSeeder com dados de exemplo
 ├── resources/
-│   ├── css/app.css                # Estilos globais + design system
+│   ├── css/app.css                 # Estilos globais (Tailwind CSS 4)
 │   └── js/
-│       ├── app.js                 # Entry point Vue
-│       ├── api.js                 # Axios configurado com interceptors
-│       ├── router.js              # Vue Router (hash history)
-│       ├── composables/           # useAuth, useNotify
-│       ├── layouts/               # AppLayout (sidebar)
-│       ├── components/            # DataTable, Pagination, ModalDialog, ...
-│       └── pages/                 # LoginPage, DashboardPage, CartoriosPage, ...
+│       ├── app.js                  # Entry point Vue
+│       ├── App.vue                 # Componente raiz
+│       ├── api.js                  # Axios com interceptors
+│       ├── router.js               # Vue Router 4
+│       ├── actions/                # Wayfinder — funções tipadas para rotas
+│       ├── composables/            # useAuth, useNotify
+│       ├── layouts/                # AppLayout (sidebar)
+│       ├── components/             # DataTable, Pagination, ModalDialog, ...
+│       ├── lib/                    # Utilitários compartilhados
+│       └── pages/                  # LoginPage, DashboardPage, CartoriosPage, ...
 ├── routes/
-│   ├── api.php                    # Rotas da API (protegidas por Sanctum)
-│   └── web.php                    # Rota raiz → SPA
-├── docker/nginx/default.conf      # Configuração Nginx
+│   ├── api.php                     # Rotas da API (protegidas por Sanctum)
+│   └── web.php                     # Rota raiz → SPA
+├── tests/
+│   ├── Feature/                    # Testes de integração (Pest)
+│   └── Unit/                       # Testes unitários (Pest)
+├── docker/
+│   ├── nginx/default.conf          # Configuração Nginx
+│   └── php/local.ini               # Configuração PHP (memory_limit, timezone, OPcache)
+├── .github/workflows/tests.yml     # Pipeline CI GitHub Actions
 ├── docker-compose.yml
-└── Dockerfile
+├── Dockerfile
+├── .dockerignore
+└── phpunit.xml
 ```
 
 ---
@@ -242,7 +352,13 @@ php artisan l5-swagger:generate
 ## Variáveis de Ambiente Relevantes
 
 ```env
+APP_NAME="Sião Cartórios"
 APP_URL=http://localhost:8000
+
+APP_LOCALE=pt_BR
+APP_FALLBACK_LOCALE=pt_BR
+APP_FAKER_LOCALE=pt_BR
+
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -250,9 +366,15 @@ DB_DATABASE=db_sistema
 DB_USERNAME=root
 DB_PASSWORD=
 
-SANCTUM_STATEFUL_DOMAINS=localhost,localhost:8000
+QUEUE_CONNECTION=database
+CACHE_STORE=database
+SESSION_DRIVER=file
+
+SANCTUM_STATEFUL_DOMAINS=localhost,localhost:5173,localhost:8000,127.0.0.1,127.0.0.1:8000
 
 L5_SWAGGER_GENERATE_ALWAYS=true
+L5_SWAGGER_UI_DOC_EXPANSION=list
+L5_SWAGGER_UI_PERSIST_AUTHORIZATION=true
 L5_SWAGGER_CONST_HOST=http://localhost:8000
 ```
 
@@ -264,6 +386,7 @@ L5_SWAGGER_CONST_HOST=http://localhost:8000
 # Migrations
 php artisan migrate
 php artisan migrate:status
+php artisan migrate:fresh --seed   # Recria tudo com seed
 
 # Seed
 php artisan db:seed
@@ -271,12 +394,18 @@ php artisan db:seed
 # Gerar documentação Swagger
 php artisan l5-swagger:generate
 
+# Testes
+php artisan test
+php artisan test --compact
+php artisan test --filter=NomeDoTeste
+
 # Limpar caches
 php artisan optimize:clear
 
-# Build frontend
-npm run build
+# Build do frontend
+npm run build    # produção
+npm run dev      # modo watch
 
-# Dev frontend (watch)
-npm run dev
+# Logs em tempo real (Pail)
+php artisan pail
 ```
